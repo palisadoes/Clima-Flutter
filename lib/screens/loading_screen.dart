@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:clima/services/location.dart';
+import 'package:clima/services/networking.dart';
+import 'package:clima/screens/location_screen.dart';
+
+const apiKey = '8f902b19215a9aca169b4525b9d9a27f';
 
 class LoadingScreen extends StatefulWidget {
   @override
@@ -7,32 +12,45 @@ class LoadingScreen extends StatefulWidget {
 }
 
 class _LoadingScreenState extends State<LoadingScreen> {
-  void getLocation() async {
-    // By default Geolocator will use FusedLocationProviderClient on Android
-    // when Google Play Services are available. It will fall back to
-    // LocationManager when it is not available. You can override the behaviour
-    // by setting forceAndroidLocationManager.
-    // This line forces Geolocation to work as Google Play services
-    // are unavailable.
+  Location location = Location();
+  double latitude;
+  double longitude;
 
-    Geolocator()..forceAndroidLocationManager = true;
+  @override
+  void initState() {
+    super.initState();
+    getLocationData();
+  }
 
-    Position position = await Geolocator()
-        .getCurrentPosition(desiredAccuracy: LocationAccuracy.low);
-    print(position);
+  void getLocationData() async {
+    Location location = Location();
+    await location.getCurrentLocation();
+    latitude = location.latitude;
+    longitude = location.longitude;
+
+    String url =
+        'https://api.openweathermap.org/data/2.5/weather?lat=$latitude&lon=$longitude&appid=$apiKey';
+    NetworkHelper networkHelper = NetworkHelper(url);
+    var weatherData = await networkHelper.getData();
+
+    Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return LocationScreen();
+    }));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: RaisedButton(
-          onPressed: () {
-            getLocation();
-          },
-          child: Text('Get Location'),
+        child: SpinKitDoubleBounce(
+          color: Colors.white,
+          size: 100.0,
         ),
       ),
     );
   }
 }
+
+//int condition = weatherData['weather'][0]['id'];
+//double temperature = weatherData['main']['temp'];
+//String cityName = weatherData['name'];
