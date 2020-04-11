@@ -8,12 +8,18 @@ class LoadingScreen extends StatefulWidget {
 
 class _LoadingScreenState extends State<LoadingScreen> {
   void getLocation() async {
-    print('Getting Location');
+    // By default Geolocator will use FusedLocationProviderClient on Android
+    // when Google Play Services are available. It will fall back to
+    // LocationManager when it is not available. You can override the behaviour
+    // by setting forceAndroidLocationManager.
+    // This line forces Geolocation to work as Google Play services
+    // are unavailable.
+
+    Geolocator()..forceAndroidLocationManager = true;
 
     Position position = await Geolocator()
         .getCurrentPosition(desiredAccuracy: LocationAccuracy.low);
     print(position);
-    print('Location Obtained');
   }
 
   @override
